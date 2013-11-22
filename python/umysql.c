@@ -769,11 +769,6 @@ PyObject *Connection_isConnected(Connection *self, PyObject *args)
   Py_RETURN_FALSE;
 }
 
-PyObject *PyUnicode_EncodeCP1250Helper(const Py_UNICODE *data, Py_ssize_t length, const char *errors)
-{
-  return PyUnicode_Encode (data, length, "cp1250", errors);
-}
-
 
 PyObject *HandleError(Connection *self, const char *funcName)
 {
@@ -876,21 +871,15 @@ PyObject *Connection_connect(Connection *self, PyObject *args)
           self->PFN_PyUnicode_Encode = PyUnicode_EncodeASCII;
         }
         else
-          if (strcmp (pstrCharset, "cp1250") == 0)
+          if (strcmp (pstrCharset, "utf8mb4") == 0)
           {
-            self->charset = MCS_cp1250_general_ci;
-            self->PFN_PyUnicode_Encode = PyUnicode_EncodeCP1250Helper;
+            self->charset = MCS_utf8mb4_general_ci;
+            self->PFN_PyUnicode_Encode = PyUnicode_EncodeUTF8;
           }
           else
-            if (strcmp (pstrCharset, "utf8mb4") == 0)
-            {
-              self->charset = MCS_utf8mb4_general_ci;
-              self->PFN_PyUnicode_Encode = PyUnicode_EncodeUTF8;
-            }
-            else
-               {
-                 return PyErr_Format (PyExc_ValueError, "Unsupported character set '%s' specified", pstrCharset);
-               }
+             {
+               return PyErr_Format (PyExc_ValueError, "Unsupported character set '%s' specified", pstrCharset);
+             }
   }
   else
   {
@@ -1093,7 +1082,7 @@ PyObject *EscapeQueryArguments(Connection *self, PyObject *inQuery, PyObject *it
   {
     /*
     FIXME: Allocate a PyString and resize it just like the Python code does it */
-    obuffer = (char *) PyObject_Malloc(cbOutQuery);
+    obuffer = (char *) PyObject_MALLOC(cbOutQuery);
     heap = 1;
   }
   else
@@ -1124,7 +1113,7 @@ PyObject *EscapeQueryArguments(Connection *self, PyObject *inQuery, PyObject *it
       if (*iptr != 's' && *iptr != '%')
       {
         Py_DECREF(iterator);
-        if (heap) PyObject_Free(obuffer);
+        if (heap) PyObject_FREE(obuffer);
         return PyErr_Format (PyExc_ValueError, "Found character %c expected %%", *iptr);
       }
 
@@ -1141,7 +1130,7 @@ PyObject *EscapeQueryArguments(Connection *self, PyObject *inQuery, PyObject *it
       if (arg == NULL)
       {
         Py_DECREF(iterator);
-        if (heap) PyObject_Free(obuffer);
+        if (heap) PyObject_FREE(obuffer);
         return PyErr_Format (PyExc_ValueError, "Unexpected end of iterator found");
       }
 
@@ -1151,7 +1140,7 @@ PyObject *EscapeQueryArguments(Connection *self, PyObject *inQuery, PyObject *it
       if (appendLen == -1)
       {
         Py_DECREF(iterator);
-        if (heap) PyObject_Free(obuffer);
+        if (heap) PyObject_FREE(obuffer);
         return NULL;
       }
 
@@ -1173,7 +1162,7 @@ END_PARSE:
 
   if (heap)
   {
-    PyObject_Free(obuffer);
+    PyObject_FREE(obuffer);
   }
 
   return retobj;
