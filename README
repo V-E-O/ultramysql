@@ -8,3 +8,5 @@ Requires Python (http://www.python.org)
 :: Installation ::
 python setup.py build install
 
+:: PyPy Compatibility ::
+Drop cp1250 support to be compatible with PyPy
